@@ -1,0 +1,614 @@
+{
+  "info": {
+    "name": "NeuEat API",
+    "description": "Postman collection for the Zoomato-CloneApp backend (Spring Boot).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "customerId",
+      "value": "customer-id"
+    },
+    {
+      "key": "driverId",
+      "value": "driver-id"
+    },
+    {
+      "key": "restaurantId",
+      "value": "restaurant-id"
+    },
+    {
+      "key": "orderId",
+      "value": "order-id"
+    },
+    {
+      "key": "query",
+      "value": "pizza"
+    }
+  ],
+  "item": [
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Get Customer By Id",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customer/{{customerId}}"
+          }
+        },
+        {
+          "name": "Customer Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"alice\",\n  \"password\": \"secret\"\n}"
+            },
+            "url": "{{baseUrl}}/api/customer/login"
+          }
+        },
+        {
+          "name": "Customer Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"alice\",\n  \"password\": \"secret\",\n  \"phoneNumber\": \"1234567890\",\n  \"address\": \"1 Main St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02115\"\n}"
+            },
+            "url": "{{baseUrl}}/api/customer/register"
+          }
+        },
+        {
+          "name": "Customer Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/customer/logout"
+          }
+        },
+        {
+          "name": "Get Customer Cart",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customer/myCart/{{customerId}}"
+          }
+        },
+        {
+          "name": "Get Customer Active Orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customer/myActiveOrders/{{customerId}}"
+          }
+        },
+        {
+          "name": "Get Customer Order History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customer/myOrderHistory/{{customerId}}"
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/customer/{{customerId}}"
+          }
+        },
+        {
+          "name": "Customer Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{customerId}}\",\n  \"password\": \"old-secret\",\n  \"newPassword\": \"new-secret\"\n}"
+            },
+            "url": "{{baseUrl}}/api/customer/resetPassword"
+          }
+        },
+        {
+          "name": "Customer Reset Phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{customerId}}\",\n  \"phoneNumber\": \"1234567890\"\n}"
+            },
+            "url": "{{baseUrl}}/api/customer/resetPhone"
+          }
+        },
+        {
+          "name": "Customer Reset Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{customerId}}\",\n  \"address\": \"2 New St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02116\"\n}"
+            },
+            "url": "{{baseUrl}}/api/customer/resetAddress"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Driver",
+      "item": [
+        {
+          "name": "Get Driver By Id",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/driver/{{driverId}}"
+          }
+        },
+        {
+          "name": "Driver Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"driver1\",\n  \"password\": \"secret\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/login"
+          }
+        },
+        {
+          "name": "Driver Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"driver1\",\n  \"password\": \"secret\",\n  \"phoneNumber\": \"1234567890\",\n  \"address\": \"3 Main St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02118\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/register"
+          }
+        },
+        {
+          "name": "Driver Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/driver/logout"
+          }
+        },
+        {
+          "name": "Get Pending Orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/driver/pendingOrders/{{driverId}}"
+          }
+        },
+        {
+          "name": "Get Driver Active Order",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/driver/myActiveOrder/{{driverId}}"
+          }
+        },
+        {
+          "name": "Get Driver Order History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/driver/myOrderHistory/{{driverId}}"
+          }
+        },
+        {
+          "name": "Accept Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"driverId\": \"{{driverId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/accept"
+          }
+        },
+        {
+          "name": "Finish Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/finish"
+          }
+        },
+        {
+          "name": "Delete Driver",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/driver/{{driverId}}"
+          }
+        },
+        {
+          "name": "Driver Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{driverId}}\",\n  \"oldPassword\": \"old-secret\",\n  \"newPassword\": \"new-secret\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/resetPassword"
+          }
+        },
+        {
+          "name": "Driver Reset Phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{driverId}}\",\n  \"phoneNumber\": \"1234567890\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/resetPhone"
+          }
+        },
+        {
+          "name": "Driver Reset Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{driverId}}\",\n  \"address\": \"4 New St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02120\"\n}"
+            },
+            "url": "{{baseUrl}}/api/driver/resetAddress"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurant",
+      "item": [
+        {
+          "name": "Get All Restaurants",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/all"
+          }
+        },
+        {
+          "name": "Search Restaurants",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/search/{{query}}"
+          }
+        },
+        {
+          "name": "Get Restaurant By Id",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Restaurant Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"resto1\",\n  \"password\": \"secret\"\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/login"
+          }
+        },
+        {
+          "name": "Restaurant Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"resto1\",\n  \"password\": \"secret\",\n  \"phoneNumber\": \"1234567890\",\n  \"address\": \"5 Main St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02122\"\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/register"
+          }
+        },
+        {
+          "name": "Restaurant Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/restaurant/logout"
+          }
+        },
+        {
+          "name": "Get Restaurant Active Orders",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/myActiveOrders/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Get Restaurant Order History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/myOrderHistory/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Get Restaurant Menu",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/menu/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Add Dish To Menu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"dishName\": \"Cheese Pizza\",\n  \"imageUrl\": \"https://example.com/pizza.jpg\",\n  \"price\": 11.99\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/addToMenu"
+          }
+        },
+        {
+          "name": "Remove Dish From Menu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"dish\": {\n    \"dishName\": \"Cheese Pizza\",\n    \"price\": 11.99,\n    \"imageUrl\": \"https://example.com/pizza.jpg\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/removeDish"
+          }
+        },
+        {
+          "name": "Get Restaurant Information",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/information/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Update Restaurant Information",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"status\": true,\n  \"name\": \"My Resto\",\n  \"description\": \"Great food\",\n  \"imageUrl\": \"https://example.com/resto.jpg\",\n  \"tag1\": \"pizza\",\n  \"tag2\": \"italian\",\n  \"tag3\": \"dinner\"\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/information"
+          }
+        },
+        {
+          "name": "Delete Restaurant",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/restaurant/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Restaurant Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{restaurantId}}\",\n  \"oldPassword\": \"old-secret\",\n  \"newPassword\": \"new-secret\"\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/resetPassword"
+          }
+        },
+        {
+          "name": "Restaurant Reset Phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{restaurantId}}\",\n  \"phoneNumber\": \"1234567890\"\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/resetPhone"
+          }
+        },
+        {
+          "name": "Restaurant Reset Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{restaurantId}}\",\n  \"address\": \"6 New St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02124\"\n}"
+            },
+            "url": "{{baseUrl}}/api/restaurant/resetAddress"
+          }
+        },
+        {
+          "name": "Get Restaurant Comments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/restaurant/getComments/{{restaurantId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order",
+      "item": [
+        {
+          "name": "Add To Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"shopcart\": [\n    {\n      \"dishName\": \"Cheese Pizza\",\n      \"price\": 11.99,\n      \"imageUrl\": \"https://example.com/pizza.jpg\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/order/addToCart"
+          }
+        },
+        {
+          "name": "Delete Order",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/order/{{orderId}}"
+          }
+        },
+        {
+          "name": "Checkout All",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orders\": [\n    {\n      \"id\": \"{{orderId}}\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/order/checkoutAll"
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"rating\": 5,\n  \"content\": \"Great food and fast delivery\"\n}"
+            },
+            "url": "{{baseUrl}}/api/order/addComment"
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/order/deleteComment/{{orderId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

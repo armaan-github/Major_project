@@ -1,0 +1,652 @@
+{
+  "info": {
+    "name": "HotelFlow API",
+    "description": "Phase 1 + Phase 2 collection for booking, folio, QR service orders, checkout invoice, role auth, dashboards, and live SSE events.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "guestId",
+      "value": ""
+    },
+    {
+      "key": "roomId",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    },
+    {
+      "key": "invoiceId",
+      "value": ""
+    },
+    {
+      "key": "guestToken",
+      "value": ""
+    },
+    {
+      "key": "receptionToken",
+      "value": ""
+    },
+    {
+      "key": "kitchenToken",
+      "value": ""
+    },
+    {
+      "key": "managerToken",
+      "value": ""
+    },
+    {
+      "key": "guestUserName",
+      "value": "guest1"
+    },
+    {
+      "key": "guestPassword",
+      "value": "secret"
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup",
+      "item": [
+        {
+          "name": "Register Guest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"guest1\",\n  \"password\": \"secret\",\n  \"phoneNumber\": \"1234567890\",\n  \"address\": \"101 Main St\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zip\": \"02110\",\n  \"roomPreference\": \"quiet\",\n  \"foodAllergies\": \"nuts\",\n  \"notes\": \"late check-in\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/guest/register"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.id) pm.collectionVariables.set('guestId', data.id);",
+                  "pm.collectionVariables.set('guestUserName', 'guest1');",
+                  "pm.collectionVariables.set('guestPassword', 'secret');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Staff Login - Reception",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"reception\",\n  \"password\": \"reception123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/auth/staff-login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.token) pm.collectionVariables.set('receptionToken', data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Staff Login - Kitchen",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"kitchen\",\n  \"password\": \"kitchen123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/auth/staff-login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.token) pm.collectionVariables.set('kitchenToken', data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Staff Login - Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"manager\",\n  \"password\": \"manager123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/auth/staff-login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.token) pm.collectionVariables.set('managerToken', data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Guest Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"{{guestUserName}}\",\n  \"password\": \"{{guestPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/auth/guest-login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.token) pm.collectionVariables.set('guestToken', data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Room",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"501\",\n  \"roomType\": \"Deluxe\",\n  \"capacity\": 2,\n  \"nightlyRate\": 150.0\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/room/create"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.id) pm.collectionVariables.set('roomId', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Available Rooms",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/room/available"
+          }
+        },
+        {
+          "name": "SSE Subscribe (all channels)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{managerToken}}"
+              },
+              {
+                "key": "Accept",
+                "value": "text/event-stream"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/events/subscribe?channel=all"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Booking",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guestId\": \"{{guestId}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"checkInDate\": \"2026-04-14\",\n  \"checkOutDate\": \"2026-04-16\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/booking/create"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.id) pm.collectionVariables.set('bookingId', data.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboards",
+      "item": [
+        {
+          "name": "Reception Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/dashboard/reception"
+          }
+        },
+        {
+          "name": "Kitchen Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{kitchenToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/dashboard/kitchen"
+          }
+        },
+        {
+          "name": "Manager Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{managerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/dashboard/manager"
+          }
+        },
+        {
+          "name": "Guest Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/dashboard/guest/{{guestId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Booking",
+      "item": [
+        {
+          "name": "Check In",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/booking/checkin"
+          }
+        },
+        {
+          "name": "Get Guest Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/booking/guest/{{guestId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Orders",
+      "item": [
+        {
+          "name": "Place QR Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"items\": [\n    {\n      \"itemName\": \"Club Sandwich\",\n      \"quantity\": 2,\n      \"unitPrice\": 12.5\n    },\n    {\n      \"itemName\": \"Coffee\",\n      \"quantity\": 1,\n      \"unitPrice\": 4.0\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/order/qr"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.id) pm.collectionVariables.set('orderId', data.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Service Orders",
+      "item": [
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{kitchenToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"IN_PREPARATION\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/order/status"
+          }
+        },
+        {
+          "name": "Kitchen Queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{kitchenToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/kds/queue"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Folio and Checkout",
+      "item": [
+        {
+          "name": "Get Folio By Booking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/folio/{{bookingId}}"
+          }
+        },
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.id) pm.collectionVariables.set('invoiceId', data.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Folio and Checkout",
+      "item": [
+        {
+          "name": "Pay Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceId\": \"{{invoiceId}}\",\n  \"amount\": 500.0\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/invoice/pay"
+          }
+        },
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receptionToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.id) pm.collectionVariables.set('invoiceId', data.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Folio By Booking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{guestToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/folio/{{bookingId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Add Inventory Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{managerToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemName\": \"Eggs\",\n  \"currentStock\": 10,\n  \"reorderLevel\": 20\n}"
+            },
+            "url": "{{baseUrl}}/api/hotelflow/inventory/item"
+          }
+        },
+        {
+          "name": "Get Low Stock Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{managerToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/hotelflow/inventory/low-stock"
+          }
+        }
+      ]
+    }
+  ]
+}

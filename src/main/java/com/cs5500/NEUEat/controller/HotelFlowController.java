@@ -11,6 +11,7 @@ import com.cs5500.NEUEat.model.hotelflow.HotelFlowRole;
 import com.cs5500.NEUEat.model.hotelflow.GuestProfile;
 import com.cs5500.NEUEat.model.hotelflow.InventoryItem;
 import com.cs5500.NEUEat.model.hotelflow.Invoice;
+import com.cs5500.NEUEat.model.hotelflow.MenuItem;
 import com.cs5500.NEUEat.model.hotelflow.Room;
 import com.cs5500.NEUEat.model.hotelflow.RoomStatus;
 import com.cs5500.NEUEat.model.hotelflow.ServiceItem;
@@ -28,6 +29,7 @@ import com.cs5500.NEUEat.service.hotelflow.FolioFlowService;
 import com.cs5500.NEUEat.service.hotelflow.HotelFlowAuthService;
 import com.cs5500.NEUEat.service.hotelflow.HotelFlowDashboardService;
 import com.cs5500.NEUEat.service.hotelflow.HotelFlowEventService;
+import com.cs5500.NEUEat.service.hotelflow.HotelFlowMenuService;
 import com.cs5500.NEUEat.service.hotelflow.PricingService;
 import com.cs5500.NEUEat.service.hotelflow.ServiceOrderFlowService;
 import java.time.LocalDate;
@@ -39,6 +41,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,6 +70,7 @@ public class HotelFlowController {
   private final RoomRepository roomRepository;
   private final InventoryItemRepository inventoryItemRepository;
   private final PasswordService passwordService;
+  private final HotelFlowMenuService hotelFlowMenuService;
 
   @Autowired
   public HotelFlowController(BookingFlowService bookingFlowService, FolioFlowService folioFlowService,
@@ -74,7 +78,7 @@ public class HotelFlowController {
       HotelFlowAuthService hotelFlowAuthService, HotelFlowDashboardService hotelFlowDashboardService,
       HotelFlowEventService hotelFlowEventService, PricingService pricingService,
       GuestRepository guestRepository, RoomRepository roomRepository,
-      InventoryItemRepository inventoryItemRepository) {
+      InventoryItemRepository inventoryItemRepository, HotelFlowMenuService hotelFlowMenuService) {
     this.bookingFlowService = bookingFlowService;
     this.folioFlowService = folioFlowService;
     this.serviceOrderFlowService = serviceOrderFlowService;
@@ -86,6 +90,7 @@ public class HotelFlowController {
     this.guestRepository = guestRepository;
     this.roomRepository = roomRepository;
     this.inventoryItemRepository = inventoryItemRepository;
+    this.hotelFlowMenuService = hotelFlowMenuService;
     this.passwordService = new PasswordService();
   }
 
@@ -426,6 +431,47 @@ public class HotelFlowController {
       return currentQuote;
     }
   }
+
+  // ─── Menu Endpoints ────────────────────────────────────────────────────────
+
+  @RequiredHotelFlowRoles({HotelFlowRole.GUEST, HotelFlowRole.KITCHEN, HotelFlowRole.MANAGER})
+  @GetMapping(path = "/menu")
+  public List<MenuItem> getActiveMenu() {
+    return hotelFlowMenuService.getActiveMenu();
+  }
+
+  @RequiredHotelFlowRoles({HotelFlowRole.KITCHEN, HotelFlowRole.MANAGER})
+  @GetMapping(path = "/menu/all")
+  public List<MenuItem> getAllMenuItems() {
+    return hotelFlowMenuService.getAllMenuItems();
+  }
+
+  @RequiredHotelFlowRoles({HotelFlowRole.KITCHEN, HotelFlowRole.MANAGER})
+  @PostMapping(path = "/menu/item")
+  public MenuItem saveMenuItem(@RequestBody String json) {
+    JSONObject object = new JSONObject(json);
+    MenuItem item = new MenuItem();
+    item.setItemName(object.getString("itemName"));
+    item.setCategory(object.getString("category"));
+    item.setDescription(object.optString("description", ""));
+    item.setImageUrl(object.optString("imageUrl", ""));
+    item.setPrice(object.getDouble("price"));
+    item.setAvailable(object.optBoolean("available", true));
+    item.setDisplayOrder(object.optInt("displayOrder", 0));
+    return hotelFlowMenuService.save(item);
+  }
+
+  @RequiredHotelFlowRoles({HotelFlowRole.KITCHEN, HotelFlowRole.MANAGER})
+  @DeleteMapping(path = "/menu/item/{id}")
+  public Map<String, String> deleteMenuItem(@PathVariable("id") String id) {
+    hotelFlowMenuService.delete(id);
+    Map<String, String> out = new HashMap<>();
+    out.put("status", "deleted");
+    out.put("id", id);
+    return out;
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ExceptionHandler({

@@ -336,6 +336,29 @@ public class HotelFlowController {
     return hotelFlowDashboardService.getGuestDashboard(guestId);
   }
 
+  @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION, HotelFlowRole.MANAGER})
+  @GetMapping(path = "/room/status-summary")
+  public Map<String, Object> getRoomStatusSummary() {
+    Map<String, Object> out = new HashMap<>();
+    out.put("totalRooms", roomRepository.count());
+
+    Map<RoomStatus, List<String>> grouped = new HashMap<>();
+    for (RoomStatus status : RoomStatus.values()) {
+      grouped.put(status, new ArrayList<>());
+    }
+    for (Room room : roomRepository.findAll()) {
+      grouped.get(room.getStatus()).add(room.getRoomNumber());
+    }
+
+    out.put("available", grouped.get(RoomStatus.AVAILABLE));
+    out.put("reserved", grouped.get(RoomStatus.RESERVED));
+    out.put("occupied", grouped.get(RoomStatus.OCCUPIED));
+    out.put("dirty", grouped.get(RoomStatus.DIRTY));
+    out.put("cleaningInProgress", grouped.get(RoomStatus.CLEANING_IN_PROGRESS));
+    out.put("outOfService", grouped.get(RoomStatus.OUT_OF_SERVICE));
+    return out;
+  }
+
   private boolean isValidRoomStatusTransition(RoomStatus currentStatus, RoomStatus targetStatus) {
     if (currentStatus == targetStatus) {
       return true;

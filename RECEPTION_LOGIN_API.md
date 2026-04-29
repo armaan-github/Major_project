@@ -60,13 +60,15 @@ These are the endpoints that the current implementation allows for the `RECEPTIO
 
 ### Room management
 
-- `POST /api/hotelflow/room/create` - create a new room
-- `GET /api/hotelflow/room/available` - list available rooms
+- `POST /api/hotelflow/room/create` - create a new room, manager only
+- `GET /api/hotelflow/room/available` - list available rooms with the live `currentQuote`
+- `PATCH /api/hotelflow/room/{id}/status` - move a room through housekeeping states
 
 ### Booking flow
 
 - `POST /api/hotelflow/booking/create` - create a booking for a guest
 - `POST /api/hotelflow/booking/checkin` - check a guest into a booking
+- `GET /api/hotelflow/booking/search?query=...` - quick search by booking id, guest id, or phone number
 - `GET /api/hotelflow/booking/guest/{guestId}` - view bookings for a guest
 
 ### Folio and checkout
@@ -92,15 +94,23 @@ Reception can add a room record with room number, room type, capacity, and night
 
 ### `room/available`
 
-Reception can see all rooms currently marked `AVAILABLE` and use them during booking.
+Reception can see all rooms currently marked `AVAILABLE` and use them during booking. The response now includes a live `currentQuote` calculated from occupancy.
+
+### `room/{id}/status`
+
+Reception or manager can move a room through housekeeping states. The backend accepts `DIRTY -> CLEANING_IN_PROGRESS -> AVAILABLE`, and it still allows a direct `DIRTY -> AVAILABLE` override.
 
 ### `booking/create`
 
-Reception creates a reservation by linking a guest to a room for a check-in and check-out date.
+Reception creates a reservation by linking a guest to a room for a check-in and check-out date. The backend stores the quoted nightly rate at booking time so the folio uses the locked quote later.
 
 ### `booking/checkin`
 
-Reception checks the guest into an existing booking. This is the point where the booking moves into the in-stay flow.
+Reception checks the guest into an existing booking. This is the point where the booking moves into the in-stay flow. If check-in happens before 12:00 PM, the backend automatically adds an early check-in fee to the folio.
+
+### `booking/search`
+
+Reception can search bookings by booking id, guest id, or guest phone number through the quick search endpoint.
 
 ### `booking/guest/{guestId}`
 
@@ -108,7 +118,7 @@ Reception can look up all bookings for a guest, which helps when managing arriva
 
 ### `folio/{bookingId}`
 
-Reception can view the running folio for a booking, including room charges and service charges.
+Reception can view the running folio for a booking, including room charges and service charges. Folio totals are computed from the stored folio lines.
 
 ### `checkout`
 
@@ -120,7 +130,7 @@ Reception records payment against an invoice.
 
 ### `dashboard/reception`
 
-Reception sees the operational summary for the front desk. The current implementation returns counts for total rooms, available rooms, occupied rooms, dirty rooms, and pending check-ins.
+Reception sees the operational summary for the front desk. The current implementation returns counts for total rooms, available rooms, occupied rooms, dirty rooms, pending check-ins, and occupancy rate.
 
 ### `dashboard/guest/{guestId}`
 
@@ -129,6 +139,13 @@ Reception can also view a guest dashboard, which includes the guest’s bookings
 ### `events/subscribe`
 
 Reception can subscribe to live SSE events so the UI can refresh when bookings, check-ins, invoices, or inventory events happen.
+
+## New backend behavior summary
+
+- Dynamic pricing is handled in the backend by `PricingService`.
+- If occupancy rises above 80%, the quoted nightly rate becomes 120% of the base room rate.
+- Check-in now publishes a `booking.checked_in` SSE event with the guest name.
+- The booking flow uses the quoted nightly rate, not the raw room rate.
 
 ## Quick summary
 

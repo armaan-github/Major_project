@@ -28,6 +28,7 @@ import com.cs5500.NEUEat.service.hotelflow.FolioFlowService;
 import com.cs5500.NEUEat.service.hotelflow.HotelFlowAuthService;
 import com.cs5500.NEUEat.service.hotelflow.HotelFlowDashboardService;
 import com.cs5500.NEUEat.service.hotelflow.HotelFlowEventService;
+import com.cs5500.NEUEat.service.hotelflow.PricingService;
 import com.cs5500.NEUEat.service.hotelflow.ServiceOrderFlowService;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,6 +62,7 @@ public class HotelFlowController {
   private final HotelFlowAuthService hotelFlowAuthService;
   private final HotelFlowDashboardService hotelFlowDashboardService;
   private final HotelFlowEventService hotelFlowEventService;
+  private final PricingService pricingService;
   private final GuestRepository guestRepository;
   private final RoomRepository roomRepository;
   private final InventoryItemRepository inventoryItemRepository;
@@ -69,7 +72,7 @@ public class HotelFlowController {
   public HotelFlowController(BookingFlowService bookingFlowService, FolioFlowService folioFlowService,
       ServiceOrderFlowService serviceOrderFlowService, CheckoutFlowService checkoutFlowService,
       HotelFlowAuthService hotelFlowAuthService, HotelFlowDashboardService hotelFlowDashboardService,
-      HotelFlowEventService hotelFlowEventService,
+      HotelFlowEventService hotelFlowEventService, PricingService pricingService,
       GuestRepository guestRepository, RoomRepository roomRepository,
       InventoryItemRepository inventoryItemRepository) {
     this.bookingFlowService = bookingFlowService;
@@ -79,6 +82,7 @@ public class HotelFlowController {
     this.hotelFlowAuthService = hotelFlowAuthService;
     this.hotelFlowDashboardService = hotelFlowDashboardService;
     this.hotelFlowEventService = hotelFlowEventService;
+    this.pricingService = pricingService;
     this.guestRepository = guestRepository;
     this.roomRepository = roomRepository;
     this.inventoryItemRepository = inventoryItemRepository;
@@ -144,7 +148,7 @@ public class HotelFlowController {
     return guestRepository.save(guest);
   }
 
-  @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION, HotelFlowRole.MANAGER})
+  @RequiredHotelFlowRoles({HotelFlowRole.MANAGER})
   @PostMapping(path = "/room/create")
   public Room createRoom(@RequestBody String jsonRoom) {
     JSONObject object = new JSONObject(jsonRoom);
@@ -159,8 +163,31 @@ public class HotelFlowController {
 
   @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION, HotelFlowRole.MANAGER})
   @GetMapping(path = "/room/available")
-  public List<Room> getAvailableRooms() {
-    return roomRepository.findByStatus(RoomStatus.AVAILABLE);
+  public List<RoomQuoteView> getAvailableRooms() {
+    List<RoomQuoteView> availableRooms = new ArrayList<>();
+    for (Room room : roomRepository.findByStatus(RoomStatus.AVAILABLE)) {
+      availableRooms.add(new RoomQuoteView(room, pricingService.calculateQuote(room)));
+    }
+    return availableRooms;
+  }
+
+  @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION, HotelFlowRole.MANAGER})
+  @PatchMapping(path = "/room/{id}/status")
+  public Room updateRoomStatus(@PathVariable("id") String roomId, @RequestBody String jsonRoom)
+      throws BookingNotFoundException {
+    Room room = roomRepository.findById(roomId)
+        .orElseThrow(() -> new BookingNotFoundException("Room not found"));
+
+    JSONObject object = new JSONObject(jsonRoom);
+    RoomStatus targetStatus = RoomStatus.valueOf(object.getString("status"));
+    if (!isValidRoomStatusTransition(room.getStatus(), targetStatus)) {
+      throw new IllegalArgumentException("Invalid room status transition");
+    }
+
+    room.setStatus(targetStatus);
+    Room savedRoom = roomRepository.save(room);
+    hotelFlowEventService.publish("room.status.changed", savedRoom);
+    return savedRoom;
   }
 
   @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION})
@@ -177,10 +204,16 @@ public class HotelFlowController {
   @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION})
   @PostMapping(path = "/booking/checkin")
   public Booking checkIn(@RequestBody String jsonBooking)
-      throws BookingNotFoundException, InvalidBookingStateException {
+      throws BookingNotFoundException, InvalidBookingStateException, FolioNotFoundException {
     JSONObject object = new JSONObject(jsonBooking);
     String bookingId = object.getString("bookingId");
     return bookingFlowService.checkIn(bookingId);
+  }
+
+  @RequiredHotelFlowRoles({HotelFlowRole.RECEPTION, HotelFlowRole.MANAGER})
+  @GetMapping(path = "/booking/search")
+  public List<Booking> searchBookings(@RequestParam(name = "query") String query) {
+    return bookingFlowService.quickSearch(query);
   }
 
   @RequiredHotelFlowRoles({HotelFlowRole.GUEST, HotelFlowRole.RECEPTION, HotelFlowRole.MANAGER})
@@ -301,6 +334,74 @@ public class HotelFlowController {
   @GetMapping(path = "/dashboard/guest/{guestId}")
   public Map<String, Object> guestDashboard(@PathVariable("guestId") String guestId) {
     return hotelFlowDashboardService.getGuestDashboard(guestId);
+  }
+
+  private boolean isValidRoomStatusTransition(RoomStatus currentStatus, RoomStatus targetStatus) {
+    if (currentStatus == targetStatus) {
+      return true;
+    }
+
+    if (currentStatus == RoomStatus.DIRTY && targetStatus == RoomStatus.CLEANING_IN_PROGRESS) {
+      return true;
+    }
+
+    if (currentStatus == RoomStatus.CLEANING_IN_PROGRESS && targetStatus == RoomStatus.AVAILABLE) {
+      return true;
+    }
+
+    if (currentStatus == RoomStatus.DIRTY && targetStatus == RoomStatus.AVAILABLE) {
+      return true;
+    }
+
+    return currentStatus == RoomStatus.OUT_OF_SERVICE && targetStatus == RoomStatus.CLEANING_IN_PROGRESS;
+  }
+
+  private static class RoomQuoteView {
+    private final String id;
+    private final String roomNumber;
+    private final String roomType;
+    private final int capacity;
+    private final double nightlyRate;
+    private final RoomStatus status;
+    private final double currentQuote;
+
+    RoomQuoteView(Room room, double currentQuote) {
+      this.id = room.getId();
+      this.roomNumber = room.getRoomNumber();
+      this.roomType = room.getRoomType();
+      this.capacity = room.getCapacity();
+      this.nightlyRate = room.getNightlyRate();
+      this.status = room.getStatus();
+      this.currentQuote = currentQuote;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public String getRoomNumber() {
+      return roomNumber;
+    }
+
+    public String getRoomType() {
+      return roomType;
+    }
+
+    public int getCapacity() {
+      return capacity;
+    }
+
+    public double getNightlyRate() {
+      return nightlyRate;
+    }
+
+    public RoomStatus getStatus() {
+      return status;
+    }
+
+    public double getCurrentQuote() {
+      return currentQuote;
+    }
   }
 
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)

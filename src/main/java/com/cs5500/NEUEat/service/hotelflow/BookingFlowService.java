@@ -1,6 +1,7 @@
 package com.cs5500.NEUEat.service.hotelflow;
 
 import com.cs5500.NEUEat.exception.BookingNotFoundException;
+import com.cs5500.NEUEat.exception.FolioNotFoundException;
 import com.cs5500.NEUEat.exception.InvalidBookingStateException;
 import com.cs5500.NEUEat.exception.RoomNotAvailableException;
 import com.cs5500.NEUEat.model.hotelflow.Booking;
@@ -13,7 +14,9 @@ public interface BookingFlowService {
       throws RoomNotAvailableException;
 
   Booking checkIn(String bookingId)
-      throws BookingNotFoundException, InvalidBookingStateException;
+      throws BookingNotFoundException, InvalidBookingStateException, FolioNotFoundException;
 
   List<Booking> getGuestBookings(String guestId);
+
+    List<Booking> quickSearch(String query);
 }

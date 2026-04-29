@@ -42,6 +42,9 @@ public class HotelFlowDashboardServiceImpl implements HotelFlowDashboardService 
   @Autowired
   private FolioRepository folioRepository;
 
+  @Autowired
+  private PricingService pricingService;
+
   @Override
   public Map<String, Object> getReceptionDashboard() {
     Map<String, Object> out = new HashMap<>();
@@ -50,6 +53,7 @@ public class HotelFlowDashboardServiceImpl implements HotelFlowDashboardService 
     out.put("availableRooms", roomRepository.findByStatus(RoomStatus.AVAILABLE).size());
     out.put("occupiedRooms", roomRepository.findByStatus(RoomStatus.OCCUPIED).size());
     out.put("dirtyRooms", roomRepository.findByStatus(RoomStatus.DIRTY).size());
+    out.put("occupancyRate", pricingService.getOccupancyRate());
 
     int reservedBookings = 0;
     for (Booking booking : bookingRepository.findAll()) {

@@ -26,6 +26,7 @@ public class Booking {
   private LocalDate checkInDate;
   private LocalDate checkOutDate;
   private LocalDateTime createdAt;
+  private double quotedNightlyRate;
 
   @Enumerated(EnumType.STRING)
   private BookingStatus status;
@@ -81,6 +82,14 @@ public class Booking {
 
   public void setCreatedAt(LocalDateTime createdAt) {
     this.createdAt = createdAt;
+  }
+
+  public double getQuotedNightlyRate() {
+    return quotedNightlyRate;
+  }
+
+  public void setQuotedNightlyRate(double quotedNightlyRate) {
+    this.quotedNightlyRate = quotedNightlyRate;
   }
 
   public BookingStatus getStatus() {
